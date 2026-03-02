@@ -1,35 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { RegistrationForm } from './components/RegistrationForm';
+import { LogOut } from 'lucide-react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const { address, isConnected } = useAccount();
+  const { connectors, connect } = useConnect();
+  const { disconnect } = useDisconnect();
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col w-full font-sans">
+      <header className="w-full p-6 flex justify-between items-center border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/50">
+            V
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-white">VoteIt</h1>
+        </div>
+
+        {isConnected && formSubmitted && (
+          <div className="flex items-center gap-4">
+            <div className="px-3 py-1.5 bg-slate-800 rounded-lg text-sm font-mono text-slate-300 border border-slate-700">
+              {address?.slice(0, 6)}...{address?.slice(-4)}
+            </div>
+            <button
+              onClick={() => disconnect()}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+              title="Disconnect"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+        )}
+      </header>
+
+      <main className="flex-1 w-full flex items-center justify-center p-6">
+        {!formSubmitted ? (
+          <RegistrationForm onSuccess={() => setFormSubmitted(true)} />
+        ) : !isConnected ? (
+          <div className="text-center p-8 bg-slate-800 rounded-2xl shadow-xl max-w-md w-full border border-slate-700">
+            <h2 className="text-2xl font-bold mb-4 text-white">Connect Wallet</h2>
+            <p className="text-slate-400 mb-8">
+              Your details have been registered. Please connect your Web3 wallet to access the voting terminal.
+            </p>
+            <div className="flex flex-col gap-3">
+              {connectors.map((connector) => (
+                <button
+                  key={connector.uid}
+                  onClick={() => connect({ connector })}
+                  className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-all shadow-md active:scale-[0.98]"
+                >
+                  Connect {connector.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="w-full max-w-3xl">
+            {/* Phase 2.3 - Voting Interface Placeholder */}
+            <div className="p-8 bg-slate-800 rounded-2xl border border-slate-700 text-center">
+              <h2 className="text-2xl text-blue-400 font-bold mb-2">Access Granted</h2>
+              <p className="text-slate-300">Phase 2.3 Voting Interface goes here.</p>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
