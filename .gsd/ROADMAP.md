@@ -36,3 +36,8 @@
 **Status**: ✅ Complete
 **Objective**: Transform the project from a single-proposal DApp to a multi-poll platform. Refactor contracts, build Node.js authentication/API layer, and wire frontend React boundaries to securely authenticate, create polls, and route users.
 **Requirements**: Multi-Poll Contract Refactor, MongoDB Setup, JWT Web2 Integration, React Router Integration.
+
+### Phase 6: Relational Smart Contract Binding
+**Status**: ⬜ Not Started
+**Objective**: Create a secure trust-boundary enforcing transactional synchronization between on-chain PollCreated events and backend MongoDB records via Server-side RPC verification strictly prohibiting decoupled Web3 optimistic writes.
+**Requirements**: Secure Auth binding, Ethers event decoding, API synchronization routes, strict UI race-condition isolation.
