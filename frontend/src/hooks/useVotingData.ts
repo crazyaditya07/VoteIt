@@ -44,7 +44,7 @@ export function useVotingData() {
         contracts: optionCalls as any,
     });
 
-    const { data: countsData, isLoading: isLoadingCounts } = useReadContracts({
+    const { data: countsData, isLoading: isLoadingCounts, refetch: refetchCounts } = useReadContracts({
         contracts: countCalls as any,
     });
 
@@ -72,8 +72,9 @@ export function useVotingData() {
         options,
         counts,
         totalVotes,
-        hasVoted,
+        hasVoted: Boolean(hasVoted),
         isLoading,
-        refetchHasVoted
+        refetchHasVoted,
+        refetchCounts
     };
 }
