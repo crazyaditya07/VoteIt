@@ -1,43 +1,37 @@
 import { useReadContract, useReadContracts, useAccount } from 'wagmi';
 import { VOTING_ABI, VOTING_CONTRACT_ADDRESS } from '../contracts/VotingABI';
 
-export function useVotingData() {
+export function useVotingData(pollId: number) {
     const { address } = useAccount();
 
-    // Read single proposal details
-    const { data: title, isLoading: isLoadingTitle } = useReadContract({
+    const { data: pollData, isLoading: isLoadingPoll } = useReadContract({
         address: VOTING_CONTRACT_ADDRESS,
         abi: VOTING_ABI,
-        functionName: 'title',
-    });
-
-    const { data: description, isLoading: isLoadingDesc } = useReadContract({
-        address: VOTING_CONTRACT_ADDRESS,
-        abi: VOTING_ABI,
-        functionName: 'description',
+        functionName: 'polls',
+        args: [BigInt(pollId)],
     });
 
     const { data: optionsCountData, isLoading: isLoadingCount } = useReadContract({
         address: VOTING_CONTRACT_ADDRESS,
         abi: VOTING_ABI,
         functionName: 'getOptionsCount',
+        args: [BigInt(pollId)],
     });
 
     const optionsCount = optionsCountData ? Number(optionsCountData) : 0;
 
-    // Read options and vote counts dynamically using useReadContracts based on the count
     const optionCalls = Array.from({ length: optionsCount }).map((_, i) => ({
         address: VOTING_CONTRACT_ADDRESS,
         abi: VOTING_ABI,
         functionName: 'getOption',
-        args: [BigInt(i)],
+        args: [BigInt(pollId), BigInt(i)],
     }));
 
     const countCalls = Array.from({ length: optionsCount }).map((_, i) => ({
         address: VOTING_CONTRACT_ADDRESS,
         abi: VOTING_ABI,
-        functionName: 'voteCounts',
-        args: [BigInt(i)],
+        functionName: 'getVoteCount',
+        args: [BigInt(pollId), BigInt(i)],
     }));
 
     const { data: optionsData, isLoading: isLoadingOptions } = useReadContracts({
@@ -52,7 +46,7 @@ export function useVotingData() {
         address: VOTING_CONTRACT_ADDRESS,
         abi: VOTING_ABI,
         functionName: 'hasVoted',
-        args: address ? [address] : undefined,
+        args: address ? [BigInt(pollId), address as `0x${string}`] : undefined,
         query: {
             enabled: !!address,
         }
@@ -61,13 +55,18 @@ export function useVotingData() {
     const options = optionsData?.map(d => d.result as string) || [];
     const counts = countsData?.map(d => Number(d.result)) || [];
 
-    const isLoading = isLoadingTitle || isLoadingDesc || isLoadingCount || isLoadingOptions || isLoadingCounts || isLoadingVoted;
+    const isLoading = isLoadingPoll || isLoadingCount || isLoadingOptions || isLoadingCounts || isLoadingVoted;
 
     const totalVotes = counts.reduce((acc, curr) => acc + curr, 0);
 
+    // @ts-ignore
+    const title = pollData ? pollData[0] : "";
+    // @ts-ignore
+    const description = pollData ? pollData[1] : "";
+
     return {
-        title,
-        description,
+        title: title as string,
+        description: description as string,
         optionsCount,
         options,
         counts,

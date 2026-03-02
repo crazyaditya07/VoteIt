@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { useVotingData } from '../hooks/useVotingData';
 import { VOTING_ABI, VOTING_CONTRACT_ADDRESS } from '../contracts/VotingABI';
 
 export const VotingInterface = () => {
-    const { title, description, options, counts, totalVotes, isLoading, hasVoted, refetchHasVoted, refetchCounts } = useVotingData();
+    const { pollId } = useParams<{ pollId: string }>();
+    const parsedPollId = pollId ? parseInt(pollId, 10) : 0;
+    const { title, description, options, counts, totalVotes, isLoading, hasVoted, refetchHasVoted, refetchCounts } = useVotingData(parsedPollId);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -56,7 +59,7 @@ export const VotingInterface = () => {
             address: VOTING_CONTRACT_ADDRESS,
             abi: VOTING_ABI,
             functionName: 'vote',
-            args: [BigInt(selectedOption)],
+            args: [BigInt(parsedPollId), BigInt(selectedOption)],
         });
     };
 
