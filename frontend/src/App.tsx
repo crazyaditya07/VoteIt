@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { RegistrationForm } from './components/RegistrationForm';
+import { VotingInterface } from './components/VotingInterface';
 import { LogOut } from 'lucide-react';
 
 function App() {
@@ -58,11 +59,7 @@ function App() {
           </div>
         ) : (
           <div className="w-full max-w-3xl">
-            {/* Phase 2.3 - Voting Interface Placeholder */}
-            <div className="p-8 bg-slate-800 rounded-2xl border border-slate-700 text-center">
-              <h2 className="text-2xl text-blue-400 font-bold mb-2">Access Granted</h2>
-              <p className="text-slate-300">Phase 2.3 Voting Interface goes here.</p>
-            </div>
+            <VotingInterface />
           </div>
         )}
       </main>
