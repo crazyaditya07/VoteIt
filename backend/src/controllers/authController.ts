@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middleware/auth';
 import User from '../models/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -61,6 +62,33 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
         }
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const linkWallet = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const { walletAddress } = req.body;
+        if (!req.user) {
+            res.status(401).json({ message: 'Not authenticated' });
+            return;
+        }
+        if (!walletAddress) {
+            res.status(400).json({ message: 'Wallet address required' });
+            return;
+        }
+
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+
+        user.walletAddress = walletAddress.toLowerCase();
+        await user.save();
+
+        res.json({ message: 'Wallet successfully linked', walletAddress: user.walletAddress });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }

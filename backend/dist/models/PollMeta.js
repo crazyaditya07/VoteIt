@@ -35,7 +35,9 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const PollMetaSchema = new mongoose_1.Schema({
-    contractPollId: { type: Number, required: true, unique: true },
+    pollId: { type: Number, required: true, unique: true },
+    contractAddress: { type: String, required: true },
+    txHash: { type: String, required: true, unique: true },
     creatorId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User', required: true },
     createdAt: { type: Date, default: Date.now }
 });

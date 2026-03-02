@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginUser = exports.registerUser = void 0;
+exports.linkWallet = exports.loginUser = exports.registerUser = void 0;
 const User_1 = __importDefault(require("../models/User"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -67,3 +67,28 @@ const loginUser = async (req, res) => {
     }
 };
 exports.loginUser = loginUser;
+const linkWallet = async (req, res) => {
+    try {
+        const { walletAddress } = req.body;
+        if (!req.user) {
+            res.status(401).json({ message: 'Not authenticated' });
+            return;
+        }
+        if (!walletAddress) {
+            res.status(400).json({ message: 'Wallet address required' });
+            return;
+        }
+        const user = await User_1.default.findById(req.user.id);
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+        user.walletAddress = walletAddress.toLowerCase();
+        await user.save();
+        res.json({ message: 'Wallet successfully linked', walletAddress: user.walletAddress });
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+exports.linkWallet = linkWallet;

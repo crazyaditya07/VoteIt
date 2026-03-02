@@ -31,3 +31,12 @@
 - [x] Frontend dynamically mapping URL path queries for Web3 hooks — VERIFIED (evidence: `React Router DOM` param intercept extracting `pollId` strictly injecting as `BigInt`)
 
 ### Verdict: PASS
+
+## Phase 6 Verification
+
+### Must-Haves
+- [x] `POST /api/polls` actively drops `pollId` params, exclusively waiting over Sepolia RPC hash decoding natively — VERIFIED (evidence: Server explicitly implements `ethereumRPC.ts` parsing logs prior to DB insert)
+- [x] Frontend `useWaitForTransactionReceipt` natively decouples race conditions bridging `isSyncing` spinners successfully isolating Web2 validations — VERIFIED (evidence: React `useEffect` isolates `isSyncing` and native HTTP `fetch` gracefully rejecting unauthenticated mappings)
+- [x] Schema structure avoids decoupled duplications completely — VERIFIED (evidence: `PollMeta.ts` explicitly maps `txHash` to `unique: true` ensuring RPC requests cannot be looped maliciously)
+
+### Verdict: PASS

@@ -39,6 +39,7 @@ const UserSchema = new mongoose_1.Schema({
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     dob: { type: Date },
+    walletAddress: { type: String, lowercase: true, trim: true },
     isVerified: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
