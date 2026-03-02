@@ -1,4 +1,4 @@
-export const VOTING_CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3" as const; // Hardhat default, but replaced when deployed to Sepolia
+export const VOTING_CONTRACT_ADDRESS = "0xEcf1Dba2852C217535Bb6aeE6E19D9228825A7Da" as const; // Deployed to Sepolia
 export const VOTING_ABI = [
     {
         "inputs": [
