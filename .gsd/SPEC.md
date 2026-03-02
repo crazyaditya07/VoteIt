@@ -1,32 +1,32 @@
 # SPEC.md — Project Specification
 
-> **Status**: `FINALIZED`
+> **Status**: `FINALIZED` (Phase 5 Extension)
 
 ## Vision
-A production-quality, decentralized voting application deployed on the Ethereum Sepolia testnet. It provides a visually stunning, responsive interface with a seamless Web3 experience, allowing users to securely cast immutable votes on a single on-chain proposal, strictly enforcing a one-wallet-one-vote mechanism.
+A production-quality, full-stack decentralized voting platform. Transitioning away from a single-poll application, it allows authenticated users to create securely managed, multi-option cryptographic polls on deployed Smart Contracts and seamlessly share them via unique routing links. Personal off-chain voter information is strictly managed via a traditional protected Node.js backend.
 
 ## Goals
-1. Provide a secure, on-chain voting mechanism on Sepolia with "one wallet = one vote" verification.
-2. Deliver a visually stunning, modern, and highly responsive user interface with elegant animations and clear state feedback.
-3. Capture basic verifiable user information (name, email, wallet address, optional ID) prior to granting voting access.
-4. Ensure votes are immutable and transparent, emitting on-chain events for each cast vote and displaying real-time aggregated results seamlessly.
+1. Provide a single smart contract to handle limitless polls securely (no factory patterns), preventing double voting per poll (mapping `pollId => wallet => bool`).
+2. Implement robust user authentication (Node.js/Express, MongoDB, bcrypt, JWT, Email Verification).
+3. Securely bind poll creation endpoints tracking the on-chain `pollId` against the user's database `userId`.
+4. Provide a stunning and highly responsive frontend experience using React Router for Dashboard viewing and public Vote links (`/vote/:pollId`).
 
 ## Non-Goals (Out of Scope)
-- Multiple active proposals per deployment (this iteration focuses on a single central proposal).
-- Support for networks other than Ethereum (Sepolia testnet initially, mainnet eventually).
-- Off-chain database storage for votes (all votes strictly on-chain).
-- Complex DAO governance tokens or quadratic voting (sticking to simple 1-wallet = 1-vote mechanism).
+- Deployment of one contract per poll.
+- Complex DAO governance tokens or quadratic voting.
+- Storing user names/emails/birthdates on the blockchain.
 
 ## Users
-- **Voters**: Individuals connecting their MetaMask wallets, submitting basic user info, reviewing proposal details (e.g., Yes/No/Abstain), and securely signing a transaction to cast their irrevocable vote.
+- **Creators:** Authenticated users who manage their own dashboard, generate polls with dynamic options, and copy links to distribute.
+- **Voters:** Users who connect their wallet to a specific link to vote (does not strictly require email login for voting, only wallet signature, preserving anonymity on the chain layer).
 
-## Constraints
-- **Technical**: Must use React (Vite), TailwindCSS, Wagmi/Viem (Web3 interaction), and Solidity (Hardhat or Foundry for contracts).
-- **Blockchain**: Strict enforcement of single-vote per address to prevent Sybil-like behavior at the contract level.
-- **UX**: High bar for aesthetics (smooth animations, modern typography, excellent loading/error states during blockchain txns).
+## Architecture Segregation
+- **Backend (Web2):** Express + MongoDB handling User Authentication, JWTs, and Poll Metadata (who created what).
+- **Frontend (UI):** React + Vite handling protected login routes, user dashboards, creating polls, and providing the voting UI.
+- **Smart Contract (Web3):** Maintains `pollCount`, stores voting arrays per pollId, tracks results robustly, and mathematically prevents double voting using `msg.sender`.
 
 ## Success Criteria
-- [ ] Smart contract successfully deployed to Sepolia, verified, and correctly tallying votes.
-- [ ] Users can successfully connect MetaMask, submit info form, cast a vote, and receive confirmation.
-- [ ] Attempting to vote twice with the same wallet fails transactionally and visually gracefully.
-- [ ] UI displays live total vote counts and percentage bars directly pulled from the smart contract without lag.
+- [ ] Users can successfully register, verify email, and log in securely.
+- [ ] Logged in users can create multi-option polls (contract successfully emits `PollCreated()`).
+- [ ] A dynamically generated `/vote/:pollId` handles routing voters to unique polls accurately.
+- [ ] Contract successfully rejects any attempts to reuse a wallet on the same `pollId`.

@@ -26,65 +26,87 @@ import type {
 export interface VotingInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "description"
+      | "createPoll"
       | "getOption"
       | "getOptionsCount"
+      | "getVoteCount"
       | "hasVoted"
-      | "options"
-      | "title"
+      | "pollCount"
+      | "polls"
       | "vote"
-      | "voteCounts"
   ): FunctionFragment;
 
-  getEvent(nameOrSignatureOrTopic: "VoteCast"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PollCreated" | "VoteCast"): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "description",
-    values?: undefined
+    functionFragment: "createPoll",
+    values: [string, string, string[]]
   ): string;
   encodeFunctionData(
     functionFragment: "getOption",
-    values: [BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getOptionsCount",
-    values?: undefined
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getVoteCount",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "hasVoted",
-    values: [AddressLike]
+    values: [BigNumberish, AddressLike]
   ): string;
+  encodeFunctionData(functionFragment: "pollCount", values?: undefined): string;
+  encodeFunctionData(functionFragment: "polls", values: [BigNumberish]): string;
   encodeFunctionData(
-    functionFragment: "options",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(functionFragment: "title", values?: undefined): string;
-  encodeFunctionData(functionFragment: "vote", values: [BigNumberish]): string;
-  encodeFunctionData(
-    functionFragment: "voteCounts",
-    values: [BigNumberish]
+    functionFragment: "vote",
+    values: [BigNumberish, BigNumberish]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "description",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "createPoll", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getOption", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getOptionsCount",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getVoteCount",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "hasVoted", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "options", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "title", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "pollCount", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "polls", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "voteCounts", data: BytesLike): Result;
+}
+
+export namespace PollCreatedEvent {
+  export type InputTuple = [pollId: BigNumberish, creator: AddressLike];
+  export type OutputTuple = [pollId: bigint, creator: string];
+  export interface OutputObject {
+    pollId: bigint;
+    creator: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace VoteCastEvent {
-  export type InputTuple = [voter: AddressLike, optionIndex: BigNumberish];
-  export type OutputTuple = [voter: string, optionIndex: bigint];
+  export type InputTuple = [
+    pollId: BigNumberish,
+    voter: AddressLike,
+    optionIndex: BigNumberish
+  ];
+  export type OutputTuple = [
+    pollId: bigint,
+    voter: string,
+    optionIndex: bigint
+  ];
   export interface OutputObject {
+    pollId: bigint;
     voter: string;
     optionIndex: bigint;
   }
@@ -137,51 +159,124 @@ export interface Voting extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  description: TypedContractMethod<[], [string], "view">;
+  createPoll: TypedContractMethod<
+    [_title: string, _description: string, _options: string[]],
+    [void],
+    "nonpayable"
+  >;
 
-  getOption: TypedContractMethod<[index: BigNumberish], [string], "view">;
+  getOption: TypedContractMethod<
+    [pollId: BigNumberish, index: BigNumberish],
+    [string],
+    "view"
+  >;
 
-  getOptionsCount: TypedContractMethod<[], [bigint], "view">;
+  getOptionsCount: TypedContractMethod<
+    [pollId: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
-  hasVoted: TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
+  getVoteCount: TypedContractMethod<
+    [pollId: BigNumberish, optionIndex: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
-  options: TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+  hasVoted: TypedContractMethod<
+    [pollId: BigNumberish, voter: AddressLike],
+    [boolean],
+    "view"
+  >;
 
-  title: TypedContractMethod<[], [string], "view">;
+  pollCount: TypedContractMethod<[], [bigint], "view">;
 
-  vote: TypedContractMethod<[optionIndex: BigNumberish], [void], "nonpayable">;
+  polls: TypedContractMethod<
+    [arg0: BigNumberish],
+    [
+      [string, string, string, bigint] & {
+        title: string;
+        description: string;
+        creator: string;
+        createdAt: bigint;
+      }
+    ],
+    "view"
+  >;
 
-  voteCounts: TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
+  vote: TypedContractMethod<
+    [pollId: BigNumberish, optionIndex: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
   getFunction(
-    nameOrSignature: "description"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: "createPoll"
+  ): TypedContractMethod<
+    [_title: string, _description: string, _options: string[]],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "getOption"
-  ): TypedContractMethod<[index: BigNumberish], [string], "view">;
+  ): TypedContractMethod<
+    [pollId: BigNumberish, index: BigNumberish],
+    [string],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "getOptionsCount"
-  ): TypedContractMethod<[], [bigint], "view">;
+  ): TypedContractMethod<[pollId: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getVoteCount"
+  ): TypedContractMethod<
+    [pollId: BigNumberish, optionIndex: BigNumberish],
+    [bigint],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "hasVoted"
-  ): TypedContractMethod<[arg0: AddressLike], [boolean], "view">;
+  ): TypedContractMethod<
+    [pollId: BigNumberish, voter: AddressLike],
+    [boolean],
+    "view"
+  >;
   getFunction(
-    nameOrSignature: "options"
-  ): TypedContractMethod<[arg0: BigNumberish], [string], "view">;
+    nameOrSignature: "pollCount"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "title"
-  ): TypedContractMethod<[], [string], "view">;
+    nameOrSignature: "polls"
+  ): TypedContractMethod<
+    [arg0: BigNumberish],
+    [
+      [string, string, string, bigint] & {
+        title: string;
+        description: string;
+        creator: string;
+        createdAt: bigint;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "vote"
-  ): TypedContractMethod<[optionIndex: BigNumberish], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "voteCounts"
-  ): TypedContractMethod<[arg0: BigNumberish], [bigint], "view">;
+  ): TypedContractMethod<
+    [pollId: BigNumberish, optionIndex: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
+  getEvent(
+    key: "PollCreated"
+  ): TypedContractEvent<
+    PollCreatedEvent.InputTuple,
+    PollCreatedEvent.OutputTuple,
+    PollCreatedEvent.OutputObject
+  >;
   getEvent(
     key: "VoteCast"
   ): TypedContractEvent<
@@ -191,7 +286,18 @@ export interface Voting extends BaseContract {
   >;
 
   filters: {
-    "VoteCast(address,uint256)": TypedContractEvent<
+    "PollCreated(uint256,address)": TypedContractEvent<
+      PollCreatedEvent.InputTuple,
+      PollCreatedEvent.OutputTuple,
+      PollCreatedEvent.OutputObject
+    >;
+    PollCreated: TypedContractEvent<
+      PollCreatedEvent.InputTuple,
+      PollCreatedEvent.OutputTuple,
+      PollCreatedEvent.OutputObject
+    >;
+
+    "VoteCast(uint256,address,uint256)": TypedContractEvent<
       VoteCastEvent.InputTuple,
       VoteCastEvent.OutputTuple,
       VoteCastEvent.OutputObject
