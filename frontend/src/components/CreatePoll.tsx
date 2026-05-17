@@ -18,7 +18,7 @@ export const CreatePoll = () => {
 
     const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
 
-    // In Plan 6 we track receipt locally extracting txHash seamlessly.
+
     const {
         isLoading: isTxConfirming,
         isSuccess: isTxSuccess,
@@ -28,13 +28,12 @@ export const CreatePoll = () => {
         hash,
     });
 
-    // Enforce DB Sync on local TX completion.
+
     useEffect(() => {
         const syncPollWithDatabase = async () => {
             if (isTxSuccess && receiptData && user?.token && address) {
-                // Ensure wallet is linked on user so RPC check passes
                 try {
-                    // Quick pre-sync: ensure wallet address is linked native to account
+
                     await fetch('http://localhost:5000/api/auth/wallet', {
                         method: 'PUT',
                         headers: {
@@ -44,7 +43,7 @@ export const CreatePoll = () => {
                         body: JSON.stringify({ walletAddress: address.toLowerCase() })
                     });
                 } catch (e) {
-                    console.error("Wallet link failed gracefully");
+                    // Wallet linking is best-effort; poll creation proceeds regardless
                 }
 
                 setIsSyncing(true);
@@ -69,10 +68,9 @@ export const CreatePoll = () => {
                         throw new Error(data.message || 'Server rejected synchronization.');
                     }
 
-                    // Strict Trust boundary passed natively!
+
                     setSuccessPollId(data.pollId);
                 } catch (error: any) {
-                    console.error("Database sync failed rigidly:", error);
                     setSyncError(error.message || 'Failed to sync with secure backend.');
                 } finally {
                     setIsSyncing(false);

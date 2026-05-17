@@ -1,7 +1,5 @@
 import { ethers } from 'ethers';
 
-// Explicitly use string signatures or full ABI to decode logs.
-// Using string signature for the specific event we care about.
 const pollCreatedSignature = [
     "event PollCreated(uint256 indexed pollId, address indexed creator, string title)"
 ];
@@ -21,27 +19,24 @@ export const verifyPollCreationTx = async (
         const receipt = await provider.getTransactionReceipt(txHash);
 
         if (!receipt) {
-            console.error(`[RPC Verify] No receipt found for tx: ${txHash}`);
-            return null; // Tx not mined or invalid
+            console.error(`[RPC] No receipt found for tx: ${txHash}`);
+            return null;
         }
 
-        // Must be successful
         if (receipt.status !== 1) {
-            console.error(`[RPC Verify] Transaction reverted: ${txHash}`);
+            console.error(`[RPC] Transaction reverted: ${txHash}`);
             return null;
         }
 
         if (receipt.to?.toLowerCase() !== expectedContract.toLowerCase()) {
-            console.error(`[RPC Verify] Transaction target mismatch. Exp: ${expectedContract}, Got: ${receipt.to}`);
+            console.error(`[RPC] Transaction target mismatch. Expected: ${expectedContract}, got: ${receipt.to}`);
             return null;
         }
 
-        // Instantiate interface to decode logs
         const iface = new ethers.Interface(pollCreatedSignature);
 
         for (const log of receipt.logs) {
             try {
-                // Ensure the log came from the expected contract specifically decoupled from false emits
                 if (log.address.toLowerCase() !== expectedContract.toLowerCase()) continue;
 
                 const decoded = iface.parseLog({
@@ -52,24 +47,23 @@ export const verifyPollCreationTx = async (
                 if (decoded && decoded.name === 'PollCreated') {
                     const creatorParam = (decoded.args[1] || '').toString().toLowerCase();
                     if (creatorParam !== expectedCreator.toLowerCase()) {
-                        console.error(`[RPC Verify] Creator mismatch! Log creator: ${creatorParam}, Expecting: ${expectedCreator}`);
-                        return null; // Return null intentionally to kill transaction mappings that impersonate
+                        console.error(`[RPC] Creator mismatch. Log creator: ${creatorParam}, expected: ${expectedCreator}`);
+                        return null;
                     }
 
                     const pollId = Number(decoded.args[0]);
                     return { pollId };
                 }
-            } catch (err) {
-                // Log may not map to PollCreated, that's fine. Ignore mismatch logs.
+            } catch {
                 continue;
             }
         }
 
-        console.error(`[RPC Verify] No valid PollCreated event found in tx: ${txHash}`);
+        console.error(`[RPC] No valid PollCreated event found in tx: ${txHash}`);
         return null;
 
     } catch (error) {
-        console.error(`[RPC Verify] Error resolving RPC verification for ${txHash}`, error);
+        console.error(`[RPC] Verification error for tx: ${txHash}`, error);
         throw error;
     }
 };

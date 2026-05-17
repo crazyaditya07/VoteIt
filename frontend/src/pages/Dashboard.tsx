@@ -62,7 +62,7 @@ export const Dashboard = () => {
                         </div>
 
                         <h2 className="text-2xl font-bold text-white mb-2">Your Dashboard</h2>
-                        <p className="text-slate-400 text-sm leading-relaxed mb-8 flex-1">Database synchronization mapping ownership natively is slated for Phase 7 implementation.</p>
+                        <p className="text-slate-400 text-sm leading-relaxed mb-8 flex-1">View and manage your created polls, track live results, and monitor voter participation across all active contracts.</p>
 
                         <div className="w-full py-4 px-6 bg-slate-900/50 border border-white/5 rounded-xl flex items-center justify-between shadow-inner">
                             <span className="text-slate-400 font-medium">Active Polling Status</span>

@@ -18,7 +18,7 @@ export const createPollMeta = async (req: AuthRequest, res: Response): Promise<v
             return;
         }
 
-        // Prevent duplicate processing
+        // Prevent duplicate transaction processing
         const existingMeta = await PollMeta.findOne({ txHash });
         if (existingMeta) {
             res.status(400).json({ message: 'Transaction already verified and synced' });
@@ -31,22 +31,18 @@ export const createPollMeta = async (req: AuthRequest, res: Response): Promise<v
             return;
         }
 
-        // --- ENFORCE TRUST BOUNDARY OVER RPC ---
         const verification = await verifyPollCreationTx(txHash, contractAddress, user.walletAddress);
 
         if (!verification) {
-            console.error(`[Poll Sync] RPC verification failed securely masking tx: ${txHash}`);
-            res.status(400).json({ message: 'RPC Validation Failed: Could not securely verify block ownership mapping.' });
+            res.status(400).json({ message: 'RPC verification failed: could not verify transaction ownership.' });
             return;
         }
 
-        // RPC extracted the poll id decoupled natively from params
         const { pollId } = verification;
 
-        // Double check pollId collision natively too
         const duplicatedPollId = await PollMeta.findOne({ pollId, contractAddress });
         if (duplicatedPollId) {
-            res.status(400).json({ message: 'Poll ID collision securely tracked.' });
+            res.status(400).json({ message: 'Poll ID already registered.' });
             return;
         }
 
@@ -59,7 +55,7 @@ export const createPollMeta = async (req: AuthRequest, res: Response): Promise<v
 
         res.status(201).json(pollMeta);
     } catch (error) {
-        console.error('[Poll Sync] Native server failure mapped correctly inside wrapper.', error);
+        console.error('[Poll Sync] Server error during poll synchronisation:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };

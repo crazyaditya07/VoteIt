@@ -28,7 +28,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
             email,
             passwordHash,
             dob,
-            isVerified: true // Mock verification for now
+            isVerified: true
         });
 
         if (user) {

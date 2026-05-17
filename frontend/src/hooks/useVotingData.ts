@@ -59,21 +59,19 @@ export function useVotingData(pollId: number) {
 
     const totalVotes = counts.reduce((acc, curr) => acc + curr, 0);
 
-    // @ts-ignore
-    const title = pollData ? pollData[0] : "";
-    // @ts-ignore
-    const description = pollData ? pollData[1] : "";
+    const pollResult = pollData as readonly [string, string, string, bigint] | undefined;
+    const title = pollResult?.[0] ?? '';
+    const description = pollResult?.[1] ?? '';
 
     return {
-        title: title as string,
-        description: description as string,
-        optionsCount,
+        title,
+        description,
         options,
         counts,
         totalVotes,
         hasVoted: Boolean(hasVoted),
         isLoading,
         refetchHasVoted,
-        refetchCounts
+        refetchCounts,
     };
 }
