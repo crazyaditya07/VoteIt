@@ -1,3 +1,0 @@
-﻿Deploying Voting Contract...
-Title: Community Treasury
-Voting contract deployed to: 0xEcf1Dba2852C217535Bb6aeE6E19D9228825A7Da
